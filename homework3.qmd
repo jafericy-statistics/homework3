@@ -1,0 +1,154 @@
+---
+title: "Homework 3"
+author: "Jacob A. Fericy"
+format: html
+editor: visual
+---
+
+## Function practice
+
+We have an R data file that contains data about pre and post-treatment and placebo blood pressure measurements. We saved the file in the internal repository folder for our program to reference, and are utilizing this for the analysis in this piece.
+
+```{r}
+#Use load function to read in data from file.
+load("hw2_list.rda")
+
+#We can use this to print the object from the file.
+print(load("hw2_list.rda"))
+
+#Checks object type
+class(bp_list)
+
+#This prints the objects in the bp_list object
+print(bp_list)
+
+#This references the treatment object of bp_list via indexing
+bp_list$treatment
+```
+
+We want to create an empty status column relative to row count in the list. We can do this by passing the nrow-valued integer into the character function. We then assign the values below. From there, we write a for loop to process through the dataframe and create a status column.
+
+```{r}
+bp_list$treatment$status <- character(nrow(bp_list$treatment))
+
+#for loop for status column creation
+for (i in 1:nrow(bp_list$treatment)) {
+  
+  #iterates through the ith value of post_treatment bp
+  bp_val <- bp_list$treatment$post_bp[i]
+
+  #if conditions to assign proper mapping to status column relative to bp
+  if (bp_val <= 120) {
+    bp_list$treatment$status[i] <- "optimal"
+  } else if (bp_val <= 130) {
+    bp_list$treatment$status[i] <- "borderline"
+  } else {
+    bp_list$treatment$status[i] <- "high"
+  }
+}
+
+#lets print the output for treatment
+head(bp_list$treatment)
+```
+
+Here, we do the same process for the placebo dataframe.
+
+```{r}
+#same process as above, so comments also apply here.
+bp_list$placebo$status <- character(nrow(bp_list$placebo))
+
+for (i in 1:nrow(bp_list$placebo)) {
+
+  bp_val <- bp_list$placebo$post_bp[i]
+
+  if (bp_val <= 120) {
+    bp_list$placebo$status[i] <- "optimal"
+  } else if (bp_val <= 130) {
+    bp_list$placebo$status[i] <- "borderline"
+  } else {
+    bp_list$placebo$status[i] <- "high"
+  }
+}
+
+#lets print the output for placebo
+head(bp_list$placebo)
+
+```
+
+## Task 2: Function Practice
+
+Suppose we have a process where we want to run mutiple scenarios with different datasets. In this example, we could define a function, which we call sum_stats, to run through this process multiple times.
+
+```{r}
+
+#Define the function that outputs summary statistics based on input
+sum_stats <- function(data_input, stat_int = "mean") {
+  
+  #this grabs the function based on the stat input
+  func <- get(stat_int)
+  
+  #references the treatment object of the data_input variable
+  treatment <- data_input$treatment
+  
+  #references the placebo object of the data_input variable
+  placebo <- data_input$placebo
+  
+  
+  #creates the statistics based on the function to apply for treatment
+  treatment_pre  <- func(treatment$pre)
+  treatment_post <- func(treatment$post)
+  treatment_diff <- func(treatment$diff)
+  
+  #creates the statistics based on the function to apply for placebo
+  placebo_pre  <- func(placebo$pre)
+  placebo_post <- func(placebo$post)
+  placebo_diff <- func(placebo$diff)
+  
+  #outputs the statistics based on variables created upstream
+  
+  output <- c(
+    "Pre-Treatment Blood Pressure" = treatment_pre,
+    "Post-Treatment Blood Pressure" = treatment_post,
+    "Treatment Blood Pressure Difference" = treatment_diff,
+    "Pre-Placebo Blood Pressure" = placebo_pre,
+    "Post-Placebo Blood Pressure" = placebo_post,
+   "Placebo Blood Pressure Difference" = placebo_diff
+  )
+  
+  return(output)
+}
+```
+
+## Mean Function Output
+
+Here, we want to apply the function to the mean function, passing in our bp_list variable. In this case, given the function is defined with the mean function initiated, we technically could ignore passing a statistics input into the function.
+
+```{r}
+
+#apply the fuction for mean, technically do not need to reference mean in this case
+sum_stats(bp_list, "mean")
+```
+
+## Variance Function Output
+
+We apply the same for variance, standard deviation, minimum, and maximum functions
+
+```{r}
+#apply the function for variance
+sum_stats(bp_list, "var")
+```
+
+```{r}
+#apply the function for variance 
+sum_stats(bp_list, "sd")
+```
+
+```{r}
+#apply the function for minimum 
+sum_stats(bp_list, "min")
+```
+
+```{r}
+#apply the function for maximum 
+sum_stats(bp_list, "max")
+```
